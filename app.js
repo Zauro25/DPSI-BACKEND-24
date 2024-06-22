@@ -1,57 +1,49 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var createError = require("http-errors");
+var express = require("express");
+var path = require("path");
+var cookieParser = require("cookie-parser");
+var logger = require("morgan");
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var productsRouter = require('./routes/products');
-var authRouter = require('./routes/auth');
-
-var sequelize = require('./models/index');
-var app = express();
-var productsRouter = require('./routes/products');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var productsRouter = require('./routes/products');
+var indexRouter = require("./routes/index");
+var usersRouter = require("./routes/users");
+var productsRouter = require("./routes/products");
 var categoriesRouter = require('./routes/categories');
-var app = express();
+var ordersRouter = require("./routes/order");
+var customersRouter = require("./routes/customers");
+var employeesRouter = require("./routes/employees");
+var orderDetailsRouter = require("./routes/orderDetails");
+var shippersRouter = require("./routes/shippers");
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+var authRouter = require('./routes/auth');
+var { sequelize } = require('./models');
+
+var app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static('uploads'));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/products', productsRouter);
 app.use('/categories', categoriesRouter);
 app.use('/auth', authRouter);
-sequelize.sync()
- .then(() => {
- console.log('Database synchronized');
- })
- .catch(err => {
- console.error('Error synchronizing database:', err);
- });
-module.exports = app;
+app.use('/orders', ordersRouter);
+app.use('/customers', customersRouter);
+app.use('/employees', employeesRouter);
+app.use('/orderDetailsRouter', orderDetailsRouter);
+app.use('/shippers', shippersRouter);
 
+sequelize.sync()
+    .then(() => {
+      console.log('Database synchronized');
+    })
+    .catch(err => {
+      console.error('Error synchronizing database:', err);
+    });
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -64,9 +56,12 @@ app.use(function(err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
+  // send json response for errors
   res.status(err.status || 500);
-  res.render('error');
+  res.json({
+    message: err.message,
+    error: req.app.get('env') === 'development' ? err : {}
+  });
 });
 
 module.exports = app;
